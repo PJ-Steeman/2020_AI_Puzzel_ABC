@@ -3,3 +3,52 @@
  * Jelle Caerlen & Pieter-Jan Steeman
  */
 
+/*
+ * Regels: 
+ *	- per rij en kolom 1 keer A, B en C
+ *	- letters langs de kant geven dichtstbijzijnde letter aan
+ */
+
+vocabulary V {
+    type Row isa int
+    type Column isa int
+    type Letter
+    
+    Solution(Row, Column, Letter)
+    
+    RowKnown(Row, Column, Letter)
+    ColumnKnown(Row, Column, Letter)
+}
+
+structure S : V {
+ 	Letter = {A; B; C;}  
+    Row = {1 .. 4}
+    Column = {1 .. 4}
+    
+    RowKnown = {
+        (4, 1, C); (1, 4, B); (3, 4, A);
+    }
+    ColumnKnown = {
+        (1, 2, C); (1, 4, C); (4, 3, A);
+    }
+}
+
+theory T : V {
+    // Max 1 letter per square
+    !row, col: 1 >= #{let[Letter]: Solution(row, col, let)}.
+    
+    // Each column contains exactly 1 A, B and C
+   	!col, let:#{row: Solution(row, col, let)} = 1.
+    
+    // Each row conains exactly 1 A, B, C
+    !row, let:#{col: Solution(row, col, let)} = 1.
+    
+    !row, let1, let2: RowKnown(row, 1, let1) => Solution(row, 1, let1) | (Solution(row, 2, let1) & ~Solution(row, 1, let2)).
+
+    !row, letter: RowKnown(row, 4, letter) => Solution(row, 4, letter).
+}
+
+procedure main() {
+    stdoptions.nbmodels = 5
+    printmodels(modelexpand(T,S))
+}
