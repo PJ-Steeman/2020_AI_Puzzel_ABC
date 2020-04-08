@@ -45,7 +45,11 @@ theory T : V {
     
     !row, let1, let2: RowKnown(row, 1, let1) => Solution(row, 1, let1) | (Solution(row, 2, let1) & ~Solution(row, 1, let2)).
 
-    !row, letter: RowKnown(row, 4, letter) => Solution(row, 4, letter).
+    !row, let1, let2: RowKnown(row, 4, let1) => Solution(row, 4, let1) | (Solution(row, 3, let1) & ~Solution(row, 4, let2)).
+    
+    !col, let1, let2: ColumnKnown(1, col, let1) => Solution(1, col, let1) | (Solution(2, col, let1) & ~Solution(1, col, let2)).
+
+    !col, let1, let2: ColumnKnown(4, col, let1) => Solution(4, col, let1) | (Solution(3, col, let1) & ~Solution(4, col, let2)).
 }
 
 procedure main() {
