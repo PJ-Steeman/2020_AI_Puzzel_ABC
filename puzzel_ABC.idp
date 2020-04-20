@@ -16,8 +16,11 @@ vocabulary V {
     
     Solution(Row, Column, Letter)
     
-    RowKnown(Row, Column, Letter)
-    ColumnKnown(Row, Column, Letter)
+    RowUpperKnown(Row, Letter)
+    RowLowerKnown(Row, Letter)
+    ColumnLeftKnown(Column, Letter)
+    ColumnRightKnown(Column, Letter)
+    
 }
 
 structure S : V {
@@ -25,45 +28,60 @@ structure S : V {
     Row = {1 .. 4}
     Column = {1 .. 4}
     
-    RowKnown = {
-        (4, 1, C); (1, 4, B); (3, 4, A);
+    RowUpperKnown = {
+        (4, C);
     }
-    ColumnKnown = {
-        (1, 2, C); (1, 4, C); (4, 3, A);
+    
+    RowLowerKnown = {
+        (1, B); (3, A);
+    }
+    
+    ColumnLeftKnown = {
+        (2, C); (4, C)
+    }
+    
+    ColumnRightKnown = {
+        (3, A);
     }
 }
 
 theory T : V {
-    // Max 1 letter per square
+    // Max 1 letter per vakje
     !row, col: 1 >= #{let[Letter]: Solution(row, col, let)}.
     
-    // Each column contains exactly 1 A, B and C
+    // Elke kolom bevat exaxt 1 keer A, B and C
    	!col, let:#{row: Solution(row, col, let)} = 1.
     
-    // Each row conains exactly 1 A, B, C
+    // Elke rij bevat exaxt 1 keer A, B and C
     !row, let:#{col: Solution(row, col, let)} = 1.
     
+    //!row : ?let2: RowUpperKnown(row, let) => ((col = 1 | (col > 1 & ~Solution(row, 1, let2))) <=> Solution(row, col, let)).
     
+    //?row : RowUpperKnown(row, let) => (?col1: !col2, let2 : (~Solution(row, col2, let2) & col1 > col2) => Solution(row, col1, let)).
+   	//?row : RowLowerKnown(row, let) => (?col1: !col2, let2 : (~Solution(row, col2, let2) & col1 < col2) => Solution(row, col1, let)).
+        
+    //!row, col2, let2: ?col1: (RowUpperKnown(row, let) & col2 < col1 & ~Solution(row, col2, let2)) => Solution(row, col1, let).
+    //!row, col2, let2: ?col1: (RowLowerKnown(row, let) & col2 > col1 & ~Solution(row, col2, let2)) => Solution(row, col1, let).
     
     //!row, let1, let2 : ?col: RowKnown(row, 1, let1) => Solution(row, 1, let1) | (Solution(row, col, let1) & ~Solution(row, col-1, let2)).
     
     //!row, let1, let2 : ?col: RowKnown(row, 4, let1) => Solution(row, 4, let1) | (Solution(row, col, let1) & ~Solution(row, col+1, let2)).
     
-    !row, let1, let2: RowKnown(row, 1, let1) => Solution(row, 1, let1) | (Solution(row, 2, let1) & ~Solution(row, 1, let2)) | (Solution(row, 3, let1) & ~Solution(row, 1, let2) & ~Solution(row, 2, let2)).
+    !row, let1, let2: RowUpperKnown(row, let1) => Solution(row, 1, let1) | (Solution(row, 2, let1) & ~Solution(row, 1, let2)).
 
-    !row, let1, let2: RowKnown(row, 4, let1) => Solution(row, 4, let1) | (Solution(row, 3, let1) & ~Solution(row, 4, let2)).
+    !row, let1, let2: RowLowerKnown(row, let1) => Solution(row, 4, let1) | (Solution(row, 3, let1) & ~Solution(row, 4, let2)).
     
     
     //!col, let1, let2 : ?row: ColumnKnown(1, col, let1) & row = 2 => Solution(1, col, let1) | (Solution(row, col, let1) & ~Solution(row-1, col, let2)).
     
     //!col, let1, let2 : ?row: ColumnKnown(4, col, let1) & row = 3 => Solution(4, col, let1) | (Solution(row, col, let1) & ~Solution(row+1, col, let2)).
     
-    !col, let1, let2: ColumnKnown(1, col, let1) => Solution(1, col, let1) | (Solution(2, col, let1) & ~Solution(1, col, let2)).
+    !col, let1, let2: ColumnLeftKnown(col, let1) => Solution(1, col, let1) | (Solution(2, col, let1) & ~Solution(1, col, let2)).
 
-   !col, let1, let2: ColumnKnown(4, col, let1) => Solution(4, col, let1) | (Solution(3, col, let1) & ~Solution(4, col, let2)).
+    !col, let1, let2: ColumnRightKnown(col, let1) => Solution(4, col, let1) | (Solution(3, col, let1) & ~Solution(4, col, let2)).
 }
 
 procedure main() {
-    stdoptions.nbmodels = 5
+    stdoptions.nbmodels = 0
     printmodels(modelexpand(T,S))
 }
