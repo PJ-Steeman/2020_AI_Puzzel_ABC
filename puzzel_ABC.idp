@@ -13,34 +13,35 @@ vocabulary V {
     type Row isa int
     type Column isa int
     type Letter
+    type meh isa int
     
     Solution(Row, Column, Letter)
     
-    RowUpperKnown(Row, Letter)
-    RowLowerKnown(Row, Letter)
-    ColumnLeftKnown(Column, Letter)
-    ColumnRightKnown(Column, Letter)
-    
+    UpperKnown(Row, Letter)
+    LowerKnown(Row, Letter)
+    LeftKnown(Column, Letter)
+    RightKnown(Column, Letter)
 }
 
 structure S : V {
+    meh = {1 .. 4}
  	Letter = {A; B; C;}  
     Row = {1 .. 4}
     Column = {1 .. 4}
     
-    RowUpperKnown = {
+    UpperKnown = {
         (4, C);
     }
     
-    RowLowerKnown = {
+    LowerKnown = {
         (1, B); (3, A);
     }
     
-    ColumnLeftKnown = {
+    LeftKnown = {
         (2, C); (4, C)
     }
     
-    ColumnRightKnown = {
+    RightKnown = {
         (3, A);
     }
 }
@@ -50,35 +51,17 @@ theory T : V {
     !row, col: 1 >= #{let[Letter]: Solution(row, col, let)}.
     
     // Elke kolom bevat exaxt 1 keer A, B and C
-   	!col, let:#{row: Solution(row, col, let)} = 1.
+    !col, let:#{row: Solution(row, col, let)} = 1.
     
     // Elke rij bevat exaxt 1 keer A, B and C
     !row, let:#{col: Solution(row, col, let)} = 1.
     
-    //!row : ?let2: RowUpperKnown(row, let) => ((col = 1 | (col > 1 & ~Solution(row, 1, let2))) <=> Solution(row, col, let)).
-    
-    //?row : RowUpperKnown(row, let) => (?col1: !col2, let2 : (~Solution(row, col2, let2) & col1 > col2) => Solution(row, col1, let)).
-   	//?row : RowLowerKnown(row, let) => (?col1: !col2, let2 : (~Solution(row, col2, let2) & col1 < col2) => Solution(row, col1, let)).
-        
-    //!row, col2, let2: ?col1: (RowUpperKnown(row, let) & col2 < col1 & ~Solution(row, col2, let2)) => Solution(row, col1, let).
-    //!row, col2, let2: ?col1: (RowLowerKnown(row, let) & col2 > col1 & ~Solution(row, col2, let2)) => Solution(row, col1, let).
-    
-    //!row, let1, let2 : ?col: RowKnown(row, 1, let1) => Solution(row, 1, let1) | (Solution(row, col, let1) & ~Solution(row, col-1, let2)).
-    
-    //!row, let1, let2 : ?col: RowKnown(row, 4, let1) => Solution(row, 4, let1) | (Solution(row, col, let1) & ~Solution(row, col+1, let2)).
-    
-    !row, let1, let2: RowUpperKnown(row, let1) => Solution(row, 1, let1) | (Solution(row, 2, let1) & ~Solution(row, 1, let2)).
-
-    !row, let1, let2: RowLowerKnown(row, let1) => Solution(row, 4, let1) | (Solution(row, 3, let1) & ~Solution(row, 4, let2)).
-    
-    
-    //!col, let1, let2 : ?row: ColumnKnown(1, col, let1) & row = 2 => Solution(1, col, let1) | (Solution(row, col, let1) & ~Solution(row-1, col, let2)).
-    
-    //!col, let1, let2 : ?row: ColumnKnown(4, col, let1) & row = 3 => Solution(4, col, let1) | (Solution(row, col, let1) & ~Solution(row+1, col, let2)).
-    
-    !col, let1, let2: ColumnLeftKnown(col, let1) => Solution(1, col, let1) | (Solution(2, col, let1) & ~Solution(1, col, let2)).
-
-    !col, let1, let2: ColumnRightKnown(col, let1) => Solution(4, col, let1) | (Solution(3, col, let1) & ~Solution(4, col, let2)).
+    // In een 4x4 moet de gegeven letter aan de rand staan of 1tje ervan verwijdert maar geen oplossing tegen de rand 
+    !row, let2: UpperKnown(row, let) & col = 1 => Solution(row, col, let) | (Solution(row, col+1, let) & ~Solution(row, col, let2)).
+    !row, let2: LowerKnown(row, let) & col = 4 => Solution(row, col, let) | (Solution(row, col-1, let) & ~Solution(row, col, let2)).
+     
+    !col, let2: LeftKnown(col, let)  & row = 1 => Solution(row, col, let) | (Solution(row+1, col, let) & ~Solution(row, col, let2)).
+    !col, let2: RightKnown(col, let) & row = 4 => Solution(row, col, let) | (Solution(row-1, col, let) & ~Solution(row, col, let2)).
 }
 
 procedure main() {
