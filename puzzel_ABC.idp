@@ -13,7 +13,6 @@ vocabulary V {
     type Row isa int
     type Column isa int
     type Letter
-    type meh isa int
     
     Solution(Row, Column, Letter)
     
@@ -24,7 +23,6 @@ vocabulary V {
 }
 
 structure S : V {
-    meh = {1 .. 4}
  	Letter = {A; B; C;}  
     Row = {1 .. 4}
     Column = {1 .. 4}
